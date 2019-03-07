@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     file.close();
+    MainWindow::initGraphs();
 
 }
 
@@ -296,4 +297,131 @@ void MainWindow::on_pushButton_2_clicked()
 void MainWindow::on_pushButton_3_clicked()
 {
     ui->tableWidget->removeRow(ui->tableWidget->currentRow());
+}
+
+void MainWindow::initGraphs(){
+    ui->customPlot->plotLayout()->insertRow(0);
+    ui->customPlot->plotLayout()->addElement(0, 0, new QCPTextElement(ui->customPlot, "V(t)", QFont("sans", 12, QFont::Bold)));
+    ui->customPlot->xAxis->setLabel("Time");
+    ui->customPlot->yAxis->setLabel("Voltage");
+    ui->customPlot2->plotLayout()->insertRow(0);
+    ui->customPlot2->plotLayout()->addElement(0, 0, new QCPTextElement(ui->customPlot2, "I(t)", QFont("sans", 12, QFont::Bold)));
+    ui->customPlot2->xAxis->setLabel("Time");
+    ui->customPlot2->yAxis->setLabel("Current");
+    ui->customPlot3->plotLayout()->insertRow(0);
+    ui->customPlot3->plotLayout()->addElement(0, 0, new QCPTextElement(ui->customPlot3, "Z(t)", QFont("sans", 12, QFont::Bold)));
+    ui->customPlot3->xAxis->setLabel("Impedance");
+    ui->customPlot3->yAxis->setLabel("Time");
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+
+}
+
+void MainWindow::on_pushButton_5_clicked()
+{
+    QVector<double> t0(1), y1(1), y2(1), y3(1);
+    t0[0] = ui->iTime->text().toDouble();
+    double w = 0;
+    if (ui->wCheck->isChecked()){
+        w = ui->w->text().toDouble();
+        ui->iFreq->setText(QString::number(w/(2*M_PI)));
+    }
+    else {
+        w = 2*ui->iFreq->text().toDouble()*M_PI;
+    }
+    double V0 = ui->iV0->text().toDouble();
+    double I0 = ui->iI0->text().toDouble();
+    double phi = ui->iPhi->text().toDouble();
+
+
+    y1[0] = (2*V0/M_PI)*asin(sin(w*t0[0]));
+    y2[0] = (2*I0/M_PI)*asin(sin(w*t0[0] - phi));
+    y3[0] = y1[0]/y2[0];
+
+    ui->iVt->setText(QString::number(y1[0]));
+    ui->iIt->setText(QString::number(y2[0]));
+    ui->iZt->setText(QString::number(y3[0]));
+
+
+
+    QVector<double> x(501), y(501);
+    for (int i=0; i<501; ++i)
+    {
+      x[i] = i/100.0;
+      y[i] = (2*V0/M_PI)*asin(sin(w*x[i]));;
+    }
+
+    ui->customPlot->addGraph();
+    ui->customPlot->graph(0)->setData(x, y);
+    ui->customPlot->addGraph();
+    ui->customPlot->graph(1)->setPen(QColor(50, 50, 50, 255));
+    ui->customPlot->graph(1)->setLineStyle(QCPGraph::lsNone);
+    ui->customPlot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
+    ui->customPlot->graph(1)->setData(t0, y1);
+    ui->customPlot->xAxis->setRange(0, 5);
+    ui->customPlot->yAxis->setRange(-2, 2);
+    ui->customPlot->replot();
+
+    for (int i=0; i<501; ++i)
+    {
+      x[i] = i/100.0;
+      y[i] = (2*I0/M_PI)*asin(sin(w*x[i] - phi));
+    }
+
+    ui->customPlot2->addGraph();
+    ui->customPlot2->graph(0)->setData(x, y);
+    ui->customPlot2->addGraph();
+    ui->customPlot2->graph(1)->setPen(QColor(50, 50, 50, 255));
+    ui->customPlot2->graph(1)->setLineStyle(QCPGraph::lsNone);
+    ui->customPlot2->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
+    ui->customPlot2->graph(1)->setData(t0, y2);
+    ui->customPlot2->xAxis->setRange(0, 5);
+    ui->customPlot2->yAxis->setRange(-2, 2);
+
+    ui->customPlot2->replot();
+
+    for (int i=0; i<501; ++i)
+    {
+      x[i] = i/100.0;
+      y[i] = (V0*asin(sin(w*x[i])))/(I0*asin(sin(w*x[i] - phi))); // let's plot a quadratic function
+    }
+
+    ui->customPlot3->addGraph();
+    ui->customPlot3->graph(0)->setData(x, y);
+    ui->customPlot3->addGraph();
+    ui->customPlot3->graph(1)->setPen(QColor(50, 50, 50, 255));
+    ui->customPlot3->graph(1)->setLineStyle(QCPGraph::lsNone);
+    ui->customPlot3->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
+    ui->customPlot3->graph(1)->setData(t0, y3);
+    ui->customPlot3->xAxis->setRange(0, 5);
+    ui->customPlot3->yAxis->setRange(-2, 2);
+    ui->customPlot3->replot();
+
+
+}
+
+void MainWindow::on_checkBox_2_clicked(bool checked)
+{
+    if (checked) {
+        ui->w->setEnabled(true);
+        ui->iFreq->setEnabled(false);
+    }
+    else {
+        ui->w->setEnabled(false);
+        ui->iFreq->setEnabled(true);
+    }
+}
+
+void MainWindow::on_wCheck_clicked(bool checked)
+{
+    if (checked) {
+        ui->w->setEnabled(true);
+        ui->iFreq->setEnabled(false);
+    }
+    else {
+        ui->w->setEnabled(false);
+        ui->iFreq->setEnabled(true);
+    }
 }

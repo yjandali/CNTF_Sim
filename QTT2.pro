@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT       += core gui widgets printsupport
 
 TARGET = QTT2
 TEMPLATE = app
@@ -24,10 +24,12 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        qcustomplot.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+        qcustomplot.h
 
 FORMS += \
         mainwindow.ui
